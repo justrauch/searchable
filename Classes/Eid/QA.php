@@ -13,13 +13,17 @@ class QA extends AbstractEidHandler
     private readonly RequestFactory $requestFactory;
     private string $apiUrl = '';
     private string $authToken = '';
+    private string $apiKey = '';
+    private string $prompt = '';
 
     public function __construct()
     {
         $settings = $GLOBALS['TYPO3_CONF_VARS']['EXTENSIONS']['searchable'] ?? [];
 
-        $this->apiUrl = $settings['api']['searchUrl'] ?? null;
-        $this->authToken = $settings['qa_token']['authtoken'] ?? null;
+        $this->apiUrl = $settings['api']['searchUrl'] ?? "";
+        $this->authToken = $settings['authtoken']['authtokentext'] ?? "";
+        $this->apiKey = $settings['apiKey']['apiKeytext'] ?? "";
+        $this->prompt = $settings['prompt']['prompttext'] ?? "";
 
         $this->requestFactory = GeneralUtility::makeInstance(RequestFactory::class);
     }
@@ -38,30 +42,22 @@ class QA extends AbstractEidHandler
 
         $question = $postParams["question"];
         $reqdata = $postParams["data"];
-        
-        if ($reqdata && $question && $this->apiUrl && $this->authToken) {
-            $data = [
-                "input" => [
-                    "question" => $question,
-                    "data" => json_encode($reqdata),
-                ],
-            ];
+        $prompt = $this->prompt;
 
-            try {
-                $responseData = $this->request($this->apiUrl, 'POST', [
-                    'headers' => [
-                        'Content-Type' => 'application/json',
-                        'Authorization' => 'Bearer ' . $this->authToken,
-                    ],
-                    'json' => $data,
-                ]);
-                $responseData = $responseData["output"];
-            } catch (\Exception $e) {
-                $responseData = ['error' => $e->getMessage()];
-            }
-        } else {
-            $responseData = ['error' => "missing parameter"];
-        }
+        $headers = [
+            'accept'=> 'application/json',
+            'Content-Type' => 'application/json',
+            'Authorization' => $this->authToken,
+            'apikey'=> $this->apiKey,
+        ];
+
+        $json = [
+            "question" => $question, 
+            "prompt" => $prompt, 
+            "data" => $reqdata
+        ];
+
+        $responseData = $this->request($this->apiUrl,"POST",['headers' => $headers, 'json' => $json]);
 
         header('Content-Type: application/json');
         echo json_encode($responseData);
@@ -75,9 +71,16 @@ class QA extends AbstractEidHandler
 
         if ($response->getStatusCode() === 200) {
             $json = json_decode($response->getBody()->getContents(), true);
-            return $json ?? [];
+
+            if (is_array($json)) {
+                return $json;
+            }
+
+            if (isset($json)) {
+                return ['text' => $json];
+            }
         }
 
-        throw new \Exception('API request failed (code ' . $response->getStatusCode() . ')');
+        return [];
     }
 }
