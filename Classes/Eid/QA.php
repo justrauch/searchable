@@ -52,12 +52,12 @@ class QA extends AbstractEidHandler
         ];
 
         $json = [
-            "question" => $question, 
-            "prompt" => $prompt, 
-            "data" => $reqdata
+            "question" => $question,
+            "prompt" => $prompt,
+            "data" => $reqdata,
         ];
 
-        $responseData = $this->request($this->apiUrl,"POST",['headers' => $headers, 'json' => $json]);
+        $responseData = $this->request($this->apiUrl, "POST", ['headers' => $headers, 'json' => $json]);
 
         header('Content-Type: application/json');
         echo json_encode($responseData);
