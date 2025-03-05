@@ -42,6 +42,7 @@ class QA extends AbstractEidHandler
 
         $question = $postParams["question"];
         $reqdata = $postParams["data"];
+        $reqlang = $postParams["lang"];
         $prompt = $this->prompt;
 
         $headers = [
@@ -55,6 +56,7 @@ class QA extends AbstractEidHandler
             "question" => $question,
             "prompt" => $prompt,
             "data" => $reqdata,
+            "lang" => $reqlang,
         ];
 
         $responseData = $this->request($this->apiUrl, "POST", ['headers' => $headers, 'json' => $json]);
