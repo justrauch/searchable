@@ -14,7 +14,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 
 /*
- * This file is part of the PAGEmachine Searchable project.
+ * This file is part of the Pagemachine Searchable project.
  */
 
 class BackendController extends ActionController
@@ -123,7 +123,8 @@ class BackendController extends ActionController
             ]);
         } else {
             $hosts = ExtconfService::getInstance()->getHostsSettings();
-            $url = sprintf('%s/typo3/', $hosts[0] ?? 'http://localhost:9200');
+            $indices = ExtconfService::getInstance()->getIndices();
+            $url = sprintf('%s/%s/', $hosts[0] ?? 'http://localhost:9200', $indices[0] ?? 'typo3');
         }
 
         $this->view->assign("url", $url);
